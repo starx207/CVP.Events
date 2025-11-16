@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CVP.Events.Api.Sdk/CVP.Events.Api.Sdk.csproj" />
+  <Project Path="CVP.Events.Contracts/CVP.Events.Contracts.csproj" />
+  <Project Path="CVP.Events/CVP.Events.csproj" />
+</Solution>

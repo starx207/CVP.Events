@@ -1,0 +1,149 @@
+# Auto normalize line endings for all files
+* text=auto
+
+# Source code
+*.cs text diff=csharp
+*.cshtml text
+*.csx text
+*.vb text
+*.fs text
+*.fsx text
+*.fsi text
+
+# XML project files
+*.csproj text
+*.vbproj text
+*.vcxproj text
+*.vcxproj.filters text
+*.proj text
+*.projitems text
+*.shproj text
+*.fsproj text
+*.dbproj text
+*.sln text eol=crlf
+
+# Configuration files
+*.config text
+*.json text
+*.xml text
+*.xaml text
+*.resx text
+
+# Web files
+*.html text
+*.htm text
+*.css text
+*.scss text
+*.sass text
+*.less text
+*.js text
+*.ts text
+*.jsx text
+*.tsx text
+
+# Documentation
+*.md text
+*.txt text
+*.rtf text
+
+# Scripts
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+
+# Serialisation
+*.json text
+*.toml text
+*.xml text
+*.yaml text
+*.yml text
+
+# Archives
+*.7z binary
+*.gz binary
+*.tar binary
+*.zip binary
+*.rar binary
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.bmp binary
+*.tiff binary
+*.tga binary
+*.svg text
+
+# Videos
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.wmv binary
+*.flv binary
+
+# Audio
+*.mp3 binary
+*.wav binary
+*.flac binary
+*.aac binary
+*.ogg binary
+*.wma binary
+
+# Fonts
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+
+# Executables and libraries
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.lib binary
+*.a binary
+
+# Office documents
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary
+*.pdf binary
+
+# Database files
+*.mdb binary
+*.accdb binary
+*.frm binary
+*.myd binary
+*.myi binary
+*.ibd binary
+*.mdf binary
+*.ldf binary
+*.sqlite binary
+*.db binary
+
+# Package files
+*.nupkg binary
+*.snupkg binary
+*.vsix binary
+*.msi binary
+
+# Certificate files
+*.pfx binary
+*.p12 binary
+*.cer binary
+*.crt binary
+*.der binary
+
+# Git
+.gitattributes text
+.gitignore text
+.gitkeep text
+
+# Line ending overrides
+*.sln text eol=crlf

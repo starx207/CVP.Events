@@ -1,0 +1,20 @@
+﻿@page "/"
+@using CVP.Events.Api.Sdk.Requests
+
+@inject IEventsApi _eventsApi;
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+@code {
+    @* protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var result = await _eventsApi.GetEventsAsync(new GetAllEventsRequest());
+        var eventCount = 0;
+    } *@
+}
