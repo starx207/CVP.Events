@@ -30,6 +30,7 @@ internal sealed class AuthTokenProvider
 
         if (_cachedToken is null)
         {
+            _logger?.LogDebug("Authenticating request");
             var response = await _authApi.AuthenticateAsync(new AuthRequest()
             {
                 ClientId = _options.Value.ClientId ?? "",
@@ -38,6 +39,10 @@ internal sealed class AuthTokenProvider
 
             _cachedToken = response.Access_Token;
             _tokenExpiration = DateTimeOffset.Now + TimeSpan.FromSeconds(response.Expires_In);
+        }
+        else
+        {
+            _logger?.LogDebug("Using cached authentication token");
         }
 
         return _cachedToken;

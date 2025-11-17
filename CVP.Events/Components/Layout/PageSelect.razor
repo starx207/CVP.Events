@@ -1,0 +1,90 @@
+﻿@rendermode InteractiveServer
+@inject NavigationManager _navManager;
+
+<nav aria-label="Events pagination">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <span class="text-muted">
+                Showing events @(((CurrentPage - 1) * PageSize) + 1) to @(Math.Min(CurrentPage * PageSize, ItemCount)) out of @ItemCount
+            </span>
+        </div>
+        <div>
+            <ul class="pagination mb-0">
+                <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => NavigateToPage(CurrentPage - 1)" disabled="@(CurrentPage == 1)">
+                        Previous
+                    </button>
+                </li>
+
+                @for (int pageNum = Math.Max(1, CurrentPage - 2); pageNum <= Math.Min(totalPages, CurrentPage + 2); pageNum++)
+                {
+                    int localPageNum = pageNum;
+                    <li class="page-item @(localPageNum == CurrentPage ? "active" : "")">
+                        <button class="page-link" @onclick="() => NavigateToPage(localPageNum)">
+                            @localPageNum
+                        </button>
+                    </li>
+                }
+
+                <li class="page-item @(CurrentPage == totalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => NavigateToPage(CurrentPage + 1)" disabled="@(CurrentPage == totalPages)">
+                        Next
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private int totalPages = 1;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "page")]
+    public int CurrentPage { get; set; } = 1;
+
+    [Parameter]
+    public int PageSize {
+        get;
+        set {
+            var newVal = Math.Max(value, 1);
+            if (field == newVal) {
+                return;
+            }
+            field = newVal;
+            SetTotalPages();
+        }
+    } = 2;
+
+    [Parameter]
+    public int ItemCount {
+        get;
+        set {
+            var newVal = Math.Max(value, 0);
+            if (field == newVal) {
+                return;
+            }
+            field = newVal;
+            SetTotalPages();
+        }
+    } = 0;
+
+    protected override void OnInitialized()
+    {
+        if (CurrentPage < 1) {
+            CurrentPage = 1;
+        }
+    }
+
+    private async Task NavigateToPage(int page) {
+        if (page < 1 || page > totalPages || page == CurrentPage)
+        {
+            return;
+        }
+        _navManager.NavigateTo(
+            _navManager.GetUriWithQueryParameter("page", page)
+        );
+    }
+
+    private void SetTotalPages() => totalPages = Math.Max((int)Math.Ceiling((double)ItemCount / PageSize), 1);
+}
