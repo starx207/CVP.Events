@@ -22,6 +22,17 @@
   font-weight: 300;
 }
 
+.page-actions {
+  margin-top: 1.5rem;
+}
+
+.page-actions .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
 .alert {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
