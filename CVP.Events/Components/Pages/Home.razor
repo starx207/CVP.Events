@@ -56,7 +56,7 @@
         </div>
 
         <EventTable Items="@events" />
-        <PageSelect PageSize="@pageSize" ItemCount="@eventTotal" />
+        <PageSelect CurrentPage="@CurrentPage" PageSize="@pageSize" ItemCount="@eventTotal" OnPageChange="PageChange" />
     }
 
     @if (errorMessage != null)
@@ -91,6 +91,7 @@
     protected override async Task OnParametersSetAsync()
     {
         selectedSortOption = Enum.TryParse<SortOption>(QuerySort, true, out var option) ? option : SortOption.StartDateDesc;
+        CurrentPage = Math.Max(1, CurrentPage); // If not defined, we'll default to the first page
         await LoadEventsAsync();
     }
 
@@ -122,6 +123,17 @@
         {
             isLoading = false;
         }
+    }
+
+    private void PageChange(int newPage)
+    {
+        if (newPage == CurrentPage)
+        {
+            return;
+        }
+        _navManager.NavigateTo(
+            _navManager.GetUriWithQueryParameter("page", newPage)
+        );
     }
 
     private void SortChanged(ChangeEventArgs e)

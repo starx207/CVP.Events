@@ -1,5 +1,4 @@
 ﻿@rendermode InteractiveServer
-@inject NavigationManager _navManager;
 
 <nav aria-label="Events pagination">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -40,7 +39,6 @@
     private int totalPages = 1;
 
     [Parameter]
-    [SupplyParameterFromQuery(Name = "page")]
     public int CurrentPage { get; set; } = 1;
 
     [Parameter]
@@ -69,6 +67,9 @@
         }
     } = 0;
 
+    [Parameter]
+    public EventCallback<int> OnPageChange { get; set; }
+
     protected override void OnInitialized()
     {
         if (CurrentPage < 1) {
@@ -81,9 +82,7 @@
         {
             return;
         }
-        _navManager.NavigateTo(
-            _navManager.GetUriWithQueryParameter("page", page)
-        );
+        await OnPageChange.InvokeAsync(page);
     }
 
     private void SetTotalPages() => totalPages = Math.Max((int)Math.Ceiling((double)ItemCount / PageSize), 1);
