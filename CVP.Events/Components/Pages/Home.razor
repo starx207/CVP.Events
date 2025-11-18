@@ -4,6 +4,7 @@
 @rendermode InteractiveServer
 
 @inject IEventsApi _eventsApi
+@inject NavigationManager _navManager
 
 <PageTitle>Events - CVP Events</PageTitle>
 
@@ -34,6 +35,26 @@
     }
     else
     {
+        <div class="search-controls">
+            <div class="search-bar">
+                <div class="search-input-group">
+                    <input type="text" class="form-control search-input" placeholder="Search for title..." @bind="@searchTerm" />
+                    <button type="button" class="btn btn-primary search-button" @onclick="Search">
+                        <i class="bi bi-search"></i>
+                        Search
+                    </button>
+                </div>
+            </div>
+            <div class="sort-controls">
+                <select id="sortSelect" class="form-select sort-select" @onchange="SortChanged">
+                    @foreach (var option in sortOptions)
+                    {
+                        <option value="@option" selected="@(option == selectedSortOption)">Sort: @option.ToDisplayName()</option>
+                    }
+                </select>
+            </div>
+        </div>
+
         <EventTable Items="@events" />
         <PageSelect PageSize="@pageSize" ItemCount="@eventTotal" />
     }
@@ -52,12 +73,26 @@
     private int pageSize = 2;
     private EventItemVM[]? events;
     private int eventTotal;
+    private SortOption selectedSortOption;
+    private SortOption[] sortOptions = Enum.GetValues<SortOption>();
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "page")]
     public int CurrentPage { get; set; }
 
-    protected override Task OnParametersSetAsync() => LoadEventsAsync();
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "filter")]
+    public string? searchTerm { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "sort")]
+    public string? QuerySort { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        selectedSortOption = Enum.TryParse<SortOption>(QuerySort, true, out var option) ? option : SortOption.StartDateDesc;
+        await LoadEventsAsync();
+    }
 
     private async Task LoadEventsAsync()
     {
@@ -69,7 +104,9 @@
             var request = new GetAllEventsRequest
             {
                 Page = Math.Max(CurrentPage, 1),
-                PageSize = pageSize
+                PageSize = pageSize,
+                OrderBy = selectedSortOption.ToSortQuery(),
+                Filter = searchTerm?.ToTitleFilter()
             };
 
             var response = await _eventsApi.GetEventsAsync(request);
@@ -85,5 +122,29 @@
         {
             isLoading = false;
         }
+    }
+
+    private void SortChanged(ChangeEventArgs e)
+    {
+        if (!Enum.TryParse<SortOption>(e.Value?.ToString(), out var newOption))
+        {
+            return;
+        }
+
+        if (newOption == selectedSortOption)
+        {
+            return; // No change
+        }
+
+        _navManager.NavigateTo(
+            _navManager.GetUriWithQueryParameter("sort", newOption.ToString())
+        );
+    }
+
+    private void Search()
+    {
+        _navManager.NavigateTo(
+            _navManager.GetUriWithQueryParameter("filter", string.IsNullOrEmpty(searchTerm) ? null : searchTerm)
+        );
     }
 }
