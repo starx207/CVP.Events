@@ -38,7 +38,13 @@
         <div class="search-controls">
             <div class="search-bar">
                 <div class="search-input-group">
-                    <input type="text" class="form-control search-input" placeholder="Search for title..." @bind="@searchTerm" />
+                    <div class="search-input-wrapper">
+                        <input type="text" class="form-control search-input" placeholder="Search for title..." @bind="@searchTerm" />
+                        @if (!string.IsNullOrEmpty(searchTerm))
+                        {
+                            <button type="button" class="btn btn-clear" @onclick="ClearSearch" title="Clear search">X</button>
+                        }
+                    </div>
                     <button type="button" class="btn btn-outline-light search-button" @onclick="Search">
                         <i class="bi bi-search"></i>
                         Search
@@ -52,11 +58,17 @@
                         <option value="@option" selected="@(option == selectedSortOption)">Sort: @option.ToDisplayName()</option>
                     }
                 </select>
+                <select id="pageSizeSelect" class="form-select page-size-select" @onchange="PageSizeChanged">
+                    @foreach (var option in pageSizeOptions)
+                    {
+                        <option value="@option" selected="@(option == PageSize)">@option per page</option>
+                    }
+                </select>
             </div>
         </div>
 
         <EventTable Items="@events" />
-        <PageSelect CurrentPage="@CurrentPage" PageSize="@pageSize" ItemCount="@eventTotal" OnPageChange="PageChange" />
+        <PageSelect CurrentPage="@CurrentPage" PageSize="@PageSize" ItemCount="@eventTotal" OnPageChange="PageChange" />
     }
 
     @if (errorMessage != null)
@@ -70,15 +82,19 @@
 @code {
     private bool isLoading = true;
     private string? errorMessage;
-    private int pageSize = 2;
     private EventItemVM[]? events;
     private int eventTotal;
     private SortOption selectedSortOption;
     private SortOption[] sortOptions = Enum.GetValues<SortOption>();
+    private int[] pageSizeOptions = [5, 10, 15, 20];
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "page")]
     public int CurrentPage { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "pageSize")]
+    public int PageSize { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "filter")]
@@ -92,6 +108,7 @@
     {
         selectedSortOption = Enum.TryParse<SortOption>(QuerySort, true, out var option) ? option : SortOption.StartDateDesc;
         CurrentPage = Math.Max(1, CurrentPage); // If not defined, we'll default to the first page
+        PageSize = Math.Max(pageSizeOptions[0], PageSize); // If not defined, we'll default to the smallest size
         await LoadEventsAsync();
     }
 
@@ -104,8 +121,8 @@
 
             var request = new GetAllEventsRequest
             {
-                Page = Math.Max(CurrentPage, 1),
-                PageSize = pageSize,
+                Page = CurrentPage,
+                PageSize = PageSize,
                 OrderBy = selectedSortOption.ToSortQuery(),
                 Filter = searchTerm?.ToTitleFilter()
             };
@@ -153,10 +170,48 @@
         );
     }
 
+    private void PageSizeChanged(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var newSize))
+        {
+            return;
+        }
+
+        if (newSize == PageSize)
+        {
+            return;
+        }
+
+        var maxPages = (int)Math.Ceiling(eventTotal / (double)newSize);
+        if (CurrentPage > maxPages)
+        {
+            // The current page will be empty with the new page size.
+            // navigate to the new size, but reset to whatever the last page will be
+            _navManager.NavigateTo(
+                _navManager.GetUriWithQueryParameters(new Dictionary<string, object?>() {
+                    { "page", maxPages },
+                    { "pageSize", newSize }
+                })
+            );
+        }
+        else
+        {
+            _navManager.NavigateTo(
+                _navManager.GetUriWithQueryParameter("pageSize", newSize)
+            );
+        }
+    }
+
     private void Search()
     {
         _navManager.NavigateTo(
             _navManager.GetUriWithQueryParameter("filter", string.IsNullOrEmpty(searchTerm) ? null : searchTerm)
         );
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = null;
+        Search();
     }
 }
