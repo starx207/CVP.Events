@@ -117,7 +117,7 @@
 
             // Navigate back to home page after a brief delay
             await Task.Delay(1500);
-            _navManager.NavigateTo("/");
+            _navManager.NavigateTo($"/?filter={response.Title}");
         }
         catch (Exception ex)
         {
