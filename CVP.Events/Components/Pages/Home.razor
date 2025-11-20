@@ -205,7 +205,10 @@
     private void Search()
     {
         _navManager.NavigateTo(
-            _navManager.GetUriWithQueryParameter("filter", string.IsNullOrEmpty(searchTerm) ? null : searchTerm)
+            _navManager.GetUriWithQueryParameters(new Dictionary<string, object?>() {
+                { "page", null },
+                { "filter", string.IsNullOrEmpty(searchTerm) ? null : searchTerm }
+            })
         );
     }
 
