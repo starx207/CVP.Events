@@ -1,5 +1,7 @@
 <Solution>
   <Project Path="CVP.Events.Api.Sdk/CVP.Events.Api.Sdk.csproj" />
+  <Project Path="CVP.Events.AppHost/CVP.Events.AppHost.csproj" />
   <Project Path="CVP.Events.Contracts/CVP.Events.Contracts.csproj" />
+  <Project Path="CVP.Events.ServiceDefaults/CVP.Events.ServiceDefaults.csproj" />
   <Project Path="CVP.Events/CVP.Events.csproj" />
 </Solution>

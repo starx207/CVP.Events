@@ -2,6 +2,7 @@ using CVP.Events.Components;
 using CVP.Events.Api.Sdk;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

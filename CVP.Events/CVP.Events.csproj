@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../CVP.Events.Api.Sdk/CVP.Events.Api.Sdk.csproj" />
+    <ProjectReference Include="../CVP.Events.ServiceDefaults/CVP.Events.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>
