@@ -11,7 +11,8 @@ public sealed class CreateEventVM
     public CreateEventVM()
     {
         var now = DateTime.Now;
-        StartDate = new DateTime(now.Year, now.Month, now.Day, now.Hour + 1, 0, 0);
+        var newHour = now.Hour + 1;
+        StartDate = new DateTime(now.Year, now.Month, now.Day + (newHour / 24), newHour % 24, 0, 0);
     }
 
     [Required(ErrorMessage = "Event title is required")]
