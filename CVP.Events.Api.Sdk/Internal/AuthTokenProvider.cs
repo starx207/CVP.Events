@@ -1,5 +1,6 @@
 using System;
 using CVP.Events.Contracts.Requests;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -10,41 +11,43 @@ internal sealed class AuthTokenProvider
     private readonly IAuthApi _authApi;
     private readonly IOptions<EventsApiOptions> _options;
     private readonly ILogger<AuthTokenProvider>? _logger;
-    private string? _cachedToken; // TODO: I should implement a real cache and then this service wouldn't need to be a singleton
-    private DateTimeOffset? _tokenExpiration;
+    private readonly IDistributedCache? _cache;
 
-    public AuthTokenProvider(IAuthApi authApi, IOptions<EventsApiOptions> options, IEnumerable<ILogger<AuthTokenProvider>> loggers)
+    public AuthTokenProvider(IAuthApi authApi, IOptions<EventsApiOptions> options, IEnumerable<ILogger<AuthTokenProvider>> loggers, IEnumerable<IDistributedCache> caches)
     {
         _authApi = authApi;
         _options = options;
         _logger = loggers.FirstOrDefault();
+        _cache = caches.FirstOrDefault();
     }
 
     public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken)
     {
-        if (_tokenExpiration is not null && DateTimeOffset.Now >= _tokenExpiration.Value)
+        var tokenKey = "EventApiToken";
+        if (_cache is not null)
         {
-            _cachedToken = null;
-            _tokenExpiration = null;
-        }
-
-        if (_cachedToken is null)
-        {
-            _logger?.LogDebug("Authenticating request");
-            var response = await _authApi.AuthenticateAsync(new AuthRequest()
+            if (await _cache.GetStringAsync(tokenKey, cancellationToken) is { } cachedToken)
             {
-                ClientId = _options.Value.ClientId ?? "",
-                ClientSecret = _options.Value.ClientSecret ?? ""
-            }, cancellationToken);
-
-            _cachedToken = response.Access_Token;
-            _tokenExpiration = DateTimeOffset.Now + TimeSpan.FromSeconds(response.Expires_In);
+                _logger?.LogDebug("Using cached authentication token");
+                return cachedToken;
+            }
         }
-        else
+
+        _logger?.LogDebug("Authenticating request");
+        var response = await _authApi.AuthenticateAsync(new AuthRequest()
         {
-            _logger?.LogDebug("Using cached authentication token");
+            ClientId = _options.Value.ClientId ?? "",
+            ClientSecret = _options.Value.ClientSecret ?? ""
+        }, cancellationToken);
+
+        if (_cache is not null)
+        {
+            await _cache.SetStringAsync(tokenKey, response.Access_Token, new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(response.Expires_In)
+            }, cancellationToken);
         }
 
-        return _cachedToken;
+        return response.Access_Token;
     }
 }
